@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Panel · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Panel de control</h1>
+    <p class="text-sm text-slate-500">Resumen general del sistema de documentos.</p>
+  </div>
+  <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+    Fase 0 · Base instalada
+  </span>
+</div>
+
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Documentos</div>
+    <div class="mt-1 text-3xl font-semibold">{{ total_documentos }}</div>
+    <div class="mt-1 text-xs text-slate-400">registrados en total</div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">En trámite</div>
+    <div class="mt-1 text-3xl font-semibold text-indigo-600">{{ en_tramite }}</div>
+    <div class="mt-1 text-xs text-slate-400">circulando por oficinas</div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Finalizados</div>
+    <div class="mt-1 text-3xl font-semibold text-emerald-600">{{ finalizados }}</div>
+    <div class="mt-1 text-xs text-slate-400">listos para el ciudadano</div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Oficinas</div>
+    <div class="mt-1 text-3xl font-semibold">{{ oficinas }}</div>
+    <div class="mt-1 text-xs text-slate-400">{{ tipos }} tipos de trámite activos</div>
+  </div>
+</div>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 lg:col-span-2">
+    <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+      Documentos por estado
+    </h2>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-400">
+          <th class="pb-2">Estado</th>
+          <th class="pb-2 text-right">Cantidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for estado, cantidad in por_estado %}
+        <tr class="border-b border-slate-100 last:border-0">
+          <td class="py-2 capitalize">{{ estado.value.replace('_', ' ') }}</td>
+          <td class="py-2 text-right font-medium">{{ cantidad }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+      Próximos pasos
+    </h2>
+    <ol class="space-y-3 text-sm text-slate-600">
+      <li class="flex gap-2"><span class="text-indigo-500">1.</span> Catálogos y registro de documentos</li>
+      <li class="flex gap-2"><span class="text-indigo-500">2.</span> Derivación entre las 16 oficinas</li>
+      <li class="flex gap-2"><span class="text-indigo-500">3.</span> Plazos y semáforo de retraso</li>
+      <li class="flex gap-2"><span class="text-indigo-500">4.</span> Notificación por WhatsApp al finalizar</li>
+    </ol>
+    <div class="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
+      El Excel consolidado ya fue analizado: 2483 documentos históricos y 16 áreas
+      que corresponden a las 16 oficinas.
+    </div>
+  </div>
+</div>
+{% endblock %}

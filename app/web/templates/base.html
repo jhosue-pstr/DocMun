@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800 antialiased">
+
+  {% if current_user %}
+  <header class="bg-slate-900 text-white shadow">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <a href="/panel" class="flex items-center gap-2 font-semibold tracking-tight">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-indigo-500 text-sm">DM</span>
+        {{ app_name }}
+      </a>
+
+      <nav class="hidden items-center gap-6 text-sm text-slate-300 md:flex">
+        <a href="/panel" class="hover:text-white">Panel</a>
+        <span class="cursor-not-allowed text-slate-500" title="Disponible en la fase 1">Documentos</span>
+        <span class="cursor-not-allowed text-slate-500" title="Disponible en la fase 1">Bandejas</span>
+        {% if current_user.rol == 'admin' %}
+        <span class="cursor-not-allowed text-slate-500" title="Disponible en la fase 1">Administración</span>
+        {% endif %}
+      </nav>
+
+      <div class="flex items-center gap-3 text-sm">
+        <div class="text-right leading-tight">
+          <div class="font-medium">{{ current_user.nombre }}</div>
+          <div class="text-xs text-slate-400">
+            {{ current_user.rol.value|capitalize }}{% if current_user.oficina %} · {{ current_user.oficina.siglas or current_user.oficina.nombre }}{% endif %}
+          </div>
+        </div>
+        <form method="post" action="/logout">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">
+            Salir
+          </button>
+        </form>
+      </div>
+    </div>
+  </header>
+  {% endif %}
+
+  <main class="mx-auto max-w-6xl px-4 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="mx-auto max-w-6xl px-4 pb-6 text-center text-xs text-slate-400">
+    {{ app_name }} · Fase 0 · {{ now if now else '' }}
+  </footer>
+
+</body>
+</html>

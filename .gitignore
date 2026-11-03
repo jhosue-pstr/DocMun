@@ -1,0 +1,28 @@
+# Entorno
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Base de datos y almacenamiento
+*.sqlite3
+storage/*
+!storage/.gitkeep
+
+# Herramientas
+.idea/
+.vscode/
+.DS_Store
+
+# Datos sensibles
+docs/fuentes/*.xlsx
+!docs/fuentes/.gitkeep

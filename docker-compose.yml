@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: docmun-db
+    environment:
+      POSTGRES_USER: docmun
+      POSTGRES_PASSWORD: docmun
+      POSTGRES_DB: docmun
+      TZ: America/Lima
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docmun -d docmun"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: docmun-app
+    environment:
+      APP_NAME: DocMun
+      ENVIRONMENT: development
+      DEBUG: "true"
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me}
+      DATABASE_URL: postgresql+psycopg://docmun:docmun@db:5432/docmun
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@docmun.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin1234}
+      TIMEZONE: America/Lima
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+      - ./storage:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  adminer:
+    image: adminer:latest
+    container_name: docmun-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
