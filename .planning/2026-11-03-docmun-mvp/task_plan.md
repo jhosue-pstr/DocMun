@@ -8,12 +8,12 @@ calcule el semáforo de retraso y notifique al ciudadano por WhatsApp/correo al 
 
 ## Next Step
 
-Escribir `AGENTS.md` (equivalente a `/init`) y luego ejecutar la Fase 2
-(esqueleto FastAPI + Docker + auth + migración inicial).
+Comenzar la Fase 3 (Fase 1 del producto): CRUD de catálogos y alta de documentos
+con cargo PDF y QR.
 
 ## Current Phase
 
-Phase 2
+Phase 3
 
 ## Phases
 
@@ -25,14 +25,14 @@ Phase 2
 - **Status:** complete
 
 ### Phase 2: Fase 0 técnica — esqueleto y base
-- [ ] Crear estructura del proyecto y repositorio git
-- [ ] Docker Compose con app + PostgreSQL
-- [ ] FastAPI con configuración, sesión y roles
-- [ ] Modelos SQLAlchemy y migración inicial Alembic
-- [ ] Seed de oficinas, tipos de trámite y usuario admin
-- [ ] Login y layout base con HTMX/Tailwind
-- [ ] Tests de health, login y permisos
-- **Status:** in_progress
+- [x] Crear estructura del proyecto y repositorio git
+- [x] Docker Compose con app + PostgreSQL
+- [x] FastAPI con configuración, sesión y roles
+- [x] Modelos SQLAlchemy y migración inicial Alembic
+- [x] Seed de oficinas, tipos de trámite y usuario admin
+- [x] Login y layout base con HTMX/Tailwind
+- [x] Tests de health, login y permisos
+- **Status:** complete
 
 ### Phase 3: Fase 1 — registro y cargo con QR
 - [ ] CRUD de catálogos (oficinas, tipos, feriados, horario)
@@ -73,6 +73,7 @@ Phase 2
 ## Decisions Made
 | Decision | Rationale |
 |----------|-----------|
+| Las 16 áreas del Excel son las 16 oficinas | Confirmado por el usuario |
 | FastAPI + SQLAlchemy 2 + Alembic | Validación automática, OpenAPI y webhooks de WhatsApp |
 | Jinja2 + HTMX + Tailwind | Sin build de JS; API queda lista para React/Flutter futuro |
 | PostgreSQL en Docker | Mismo entorno en PC de desarrollo y servidor municipal |
