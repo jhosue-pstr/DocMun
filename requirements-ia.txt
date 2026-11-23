@@ -1,0 +1,11 @@
+# Dependencias del contenedor de inferencia (OCR + LayoutLMv3).
+# La app web NO instala este archivo: no necesita torch.
+-r requirements.txt
+
+torch==2.6.0
+transformers==4.57.6
+pytesseract>=0.3.10
+pymupdf>=1.24
+pillow>=10.0
+numpy>=1.26
+safetensors>=0.4

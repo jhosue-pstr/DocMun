@@ -8,12 +8,14 @@ calcule el semáforo de retraso y notifique al ciudadano por WhatsApp/correo al 
 
 ## Next Step
 
-Comenzar la Fase 3 (Fase 1 del producto): CRUD de catálogos y alta de documentos
-con cargo PDF y QR.
+Implementar la Fase 4 del producto (notificaciones): interfaz `Notifier` con
+adaptadores consola/correo/WhatsApp Cloud, registro de `Notificacion` al finalizar y
+job de envío con reintentos. El registro, los adjuntos, el QR, el cargo, la
+circulación, el motor de SLA y el asistente local de IA ya están operativos.
 
 ## Current Phase
 
-Phase 3
+Phase 6
 
 ## Phases
 
@@ -35,23 +37,29 @@ Phase 3
 - **Status:** complete
 
 ### Phase 3: Fase 1 — registro y cargo con QR
-- [ ] CRUD de catálogos (oficinas, tipos, feriados, horario)
-- [ ] Alta de ciudadano y documento con código interno
-- [ ] Generación de cargo PDF con QR
-- [ ] Importador del Excel histórico (2483 registros)
-- **Status:** pending
+- [x] Cimientos: `openpyxl`, `PUBLIC_BASE_URL`, flash, navegación, auditoría y
+      servicios base (`ciudadanos`, `documentos`)
+- [x] CRUD de catálogos (oficinas, tipos, feriados, horario)
+- [x] Alta de ciudadano y documento con código interno
+- [x] Lista con filtros, detalle, adjuntos y visualización autenticada
+- [x] Generación de cargo PDF, QR y etiqueta 100×70 mm
+- [x] Muestra idempotente de 20 registros históricos
+- [x] Importador completo del Excel histórico (2483 filas → 2371 documentos únicos)
+- **Status:** complete
 
 ### Phase 4: Fase 2 — circulación entre oficinas
-- [ ] Derivar, recibir, observar, finalizar y anular
-- [ ] Bandejas por oficina y timeline del documento
-- [ ] Auditoría inmutable de cada movimiento
-- **Status:** pending
+- [x] Derivar, recibir, observar, subsanar, finalizar, archivar y anular
+- [x] Bandejas por rol y recorrido del documento con timeline inmutable
+- [x] Auditoría inmutable de cada movimiento y evento
+- [x] `fecha_limite` en horas hábiles al confirmar recepción
+- **Status:** complete
 
 ### Phase 5: Fase 3 — motor de SLA y alertas
-- [ ] Cálculo en horas hábiles con feriados
-- [ ] Semáforo en_plazo / por_vencer / atrasado / muy_atrasado
-- [ ] Job `evaluar_plazos` y alertas internas
-- **Status:** pending
+- [x] Cálculo en horas hábiles con feriados
+- [x] Semáforo en_plazo / por_vencer / atrasado / muy_atrasado
+- [x] Job `evaluar_plazos` y alertas internas
+- [x] Scheduler continuo y datos de demostración con flujo real
+- **Status:** complete
 
 ### Phase 6: Fase 4 — notificaciones
 - [ ] Interfaz Notifier con adaptadores consola, correo y WhatsApp Cloud
@@ -66,9 +74,17 @@ Phase 3
 - **Status:** pending
 
 ### Phase 8: Post-MVP — dashboard y portal ciudadano
-- [ ] Dashboard de cuellos de botella y promedios por oficina
+- [x] Dashboard de cuellos de botella y promedios por oficina (`/admin/metricas`)
 - [ ] Portal público de seguimiento (sujeto a aprobación de requerimientos)
-- **Status:** pending
+- **Status:** partial
+
+### Phase 9: Asistente local de IA (extra, opcional)
+- [x] Tabla `documento_analisis` y cola de trabajo con worker propio
+- [x] OCR con Tesseract y reglas en español para tipo y campos
+- [x] LayoutLMv3 local (clasificación y KIE) como señal secundaria
+- [x] Prellenado del registro con confirmación humana y borradores
+- [x] Scripts de dataset y entrenamiento (`exportar_dataset_ia`, `entrenar_ia`)
+- **Status:** complete
 
 ## Decisions Made
 | Decision | Rationale |
@@ -82,6 +98,18 @@ Phase 3
 | Movimientos inmutables | Auditoría municipal; correcciones por reversión |
 | Proveedor WhatsApp por interfaz | Permite desarrollar sin cuenta Meta y conectar después |
 | Importar el Excel como histórico | 2483 documentos de referencia y base para reportes |
+| Archivos en disco, metadatos en `documento_archivos` | Evita blobs en PostgreSQL y permite varios escaneos por trámite |
+| Un código interno agrupa todos los archivos del mismo trámite | El expediente físico es uno solo; los anexos se adjuntan después |
+| Muestra de 20 registros antes del importador completo | Permite validar la UI y el mapeo sin cargar datos personales masivos |
+| Año inferido desde `archivo_origen` | 92 filas traían solo el correlativo; el nombre del archivo sí incluía el año |
+| Las 112 filas con clave repetida se omiten y se reportan | No se puede violar `UNIQUE (tipo_tramite_id, numero_certificado, anio)`; quedan para revisión manual |
+| El job de SLA corre en un servicio `scheduler` de Compose | Evita depender de cron/systemd del host y funciona igual en desarrollo y en el servidor |
+| Las alertas internas se registran como `Evento ALERTA_PLAZO` una sola vez por tramo y nivel | El semáforo no se guarda y el job queda idempotente |
+| La base de demostración se reconstruye con un flujo simulado | Permite probar bandejas, timeline y semáforo con los 2371 documentos históricos sin inventar datos personales |
+| La IA corre en un contenedor aparte (`ia`) con cola en base de datos | La app web no instala torch; un modelo pesado no bloquea el registro ni la circulación |
+| El tipo de trámite se sugiere con reglas en español, no con RVL-CDIP | El clasificador incluido es genérico y en inglés; en una carta real predijo `resume` al 99.96 % |
+| Toda sugerencia requiere confirmación de ventanilla | El expediente es un acto administrativo; la IA solo prellena y deja la etiqueta para reentrenar |
+| El binario del borrador vive en `storage/borradores/` hasta registrar | Permite analizar antes de crear el documento y evita adjuntos huérfanos |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |

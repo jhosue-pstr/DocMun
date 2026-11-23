@@ -13,6 +13,10 @@ from starlette.middleware.sessions import SessionMiddleware
 import app.models  # noqa: F401  (registra todos los modelos en el metadata)
 from app.core.config import settings
 from app.db.session import get_db
+from app.web.admin_routes import router as admin_router
+from app.web.circulacion_routes import bandejas_router
+from app.web.circulacion_routes import router as circulacion_router
+from app.web.documentos_routes import router as documentos_router
 from app.web.routes import router as web_router
 from app.web.templating import render
 
@@ -37,6 +41,10 @@ STATIC_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 app.include_router(web_router)
+app.include_router(documentos_router)
+app.include_router(circulacion_router)
+app.include_router(bandejas_router)
+app.include_router(admin_router)
 
 
 @app.exception_handler(StarletteHTTPException)

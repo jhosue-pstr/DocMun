@@ -1,0 +1,10 @@
+# Solo para la máquina que entrena (idealmente con GPU).
+# No se instala en el servidor de DocMun.
+torch>=2.3
+transformers>=4.46,<5
+accelerate>=0.30
+scikit-learn>=1.4
+pillow>=10.0
+pytesseract>=0.3.10
+pymupdf>=1.24
+numpy>=1.26

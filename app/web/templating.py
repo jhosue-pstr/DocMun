@@ -1,6 +1,6 @@
 """Configuración de Jinja2 y helper de render."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -9,6 +9,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.core.config import settings
 from app.core.csrf import get_csrf_token
+from app.web.flash import pop_flash
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -38,6 +39,9 @@ def render(
         "app_name": settings.app_name,
         "csrf_token": get_csrf_token(request),
         "current_user": None,
+        "flash_messages": pop_flash(request),
+        "now": datetime.now(UTC),
+        "ia_habilitada": settings.ia_habilitada,
     }
     ctx.update(context or {})
     return templates.TemplateResponse(

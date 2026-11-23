@@ -1,0 +1,25 @@
+{% macro semaforo_badge(plazo, detalle=false) %}
+{% if plazo %}
+{% set estilos = {
+  "en_plazo": "bg-emerald-100 text-emerald-800",
+  "por_vencer": "bg-amber-100 text-amber-800",
+  "atrasado": "bg-orange-100 text-orange-800",
+  "muy_atrasado": "bg-red-100 text-red-800"
+} %}
+<span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {{ estilos.get(plazo.semaforo.value, 'bg-slate-100 text-slate-700') }}">
+  <span class="h-1.5 w-1.5 rounded-full bg-current opacity-70"></span>
+  {{ plazo.semaforo.value.replace('_', ' ')|capitalize }}
+</span>
+{% if detalle %}
+<span class="text-xs text-slate-500">
+  {% if plazo.horas_atraso > 0 %}
+    Atrasado {{ plazo.horas_atraso|round(1) }} h hábiles
+  {% else %}
+    Vence en {{ plazo.horas_restantes|round(1) }} h hábiles
+  {% endif %}
+</span>
+{% endif %}
+{% else %}
+<span class="text-xs text-slate-400">—</span>
+{% endif %}
+{% endmacro %}

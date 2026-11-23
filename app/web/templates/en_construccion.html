@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+  <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+    Fase 1 · En construcción
+  </span>
+  <h1 class="mt-4 text-2xl font-semibold tracking-tight">{{ titulo }}</h1>
+  <p class="mt-2 max-w-2xl text-sm text-slate-500">{{ detalle }}</p>
+  <a href="/panel" class="mt-5 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+    Volver al panel
+  </a>
+</div>
+{% endblock %}

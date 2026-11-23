@@ -40,6 +40,19 @@ class OrigenDocumento(str, enum.Enum):
     IMPORTADO = "importado"
 
 
+class OrigenArchivo(str, enum.Enum):
+    ESCANEO = "escaneo"
+    CAMARA = "camara"
+    UPLOAD = "upload"
+
+
+class EstadoAnalisis(str, enum.Enum):
+    PENDIENTE = "pendiente"
+    PROCESANDO = "procesando"
+    LISTO = "listo"
+    ERROR = "error"
+
+
 class TipoDocumentoIdentidad(str, enum.Enum):
     DNI = "dni"
     RUC = "ruc"
@@ -60,9 +73,14 @@ class EstadoNotificacion(str, enum.Enum):
 
 class TipoEvento(str, enum.Enum):
     CREADO = "creado"
+    ADJUNTO_AGREGADO = "adjunto_agregado"
     DERIVADO = "derivado"
     RECIBIDO = "recibido"
     OBSERVADO = "observado"
+    SUBSANADO = "subsanado"
     FINALIZADO = "finalizado"
     ANULADO = "anulado"
+    ARCHIVADO = "archivado"
+    ALERTA_PLAZO = "alerta_plazo"
     NOTIFICADO = "notificado"
+    ANALIZADO = "analizado"

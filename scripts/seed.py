@@ -19,7 +19,10 @@ from app.models.usuarios import Usuario
 CONFIGURACION_INICIAL = {
     "municipio_nombre": ("Municipalidad", "Nombre oficial de la entidad"),
     "horario_laboral": (
-        '{"lunes_viernes": ["08:00", "16:00"], "sabado": null, "domingo": null}',
+        (
+            '{"lunes_viernes": [["08:00", "13:00"], ["14:00", "17:00"]], '
+            '"sabado": null, "domingo": null}'
+        ),
         "Horario de atención usado para calcular plazos en horas hábiles",
     ),
     "umbral_por_vencer": ("0.8", "Fracción del plazo que marca por vencer"),
@@ -43,9 +46,7 @@ def seed_oficinas_y_tipos(db) -> None:
             db.flush()
             print(f"  + oficina {area.codigo} {area.nombre}")
 
-        tipo = db.scalar(
-            select(TipoTramite).where(TipoTramite.codigo == f"TR-{area.codigo[-2:]}")
-        )
+        tipo = db.scalar(select(TipoTramite).where(TipoTramite.codigo == f"TR-{area.codigo[-2:]}"))
         if tipo is None:
             tipo = TipoTramite(
                 codigo=f"TR-{area.codigo[-2:]}",

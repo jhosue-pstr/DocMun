@@ -68,3 +68,33 @@ def test_post_sin_csrf_es_rechazado(client: TestClient, admin_user):
         headers=HTML,
     )
     assert response.status_code == 400
+
+
+def test_documentos_sin_sesion_redirige_a_login(client: TestClient):
+    response = client.get("/documentos", headers=HTML, follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login"
+
+
+def test_documentos_y_admin_disponibles_para_admin(
+    client: TestClient, admin_user
+):
+    token = _csrf(client)
+    client.post(
+        "/login",
+        data={
+            "email": "admin@test.local",
+            "password": "secreto123",
+            "csrf_token": token,
+        },
+        headers=HTML,
+        follow_redirects=False,
+    )
+
+    documentos = client.get("/documentos", headers=HTML)
+    assert documentos.status_code == 200
+    assert "Documentos" in documentos.text
+
+    admin = client.get("/admin", headers=HTML)
+    assert admin.status_code == 200
+    assert "Administración" in admin.text

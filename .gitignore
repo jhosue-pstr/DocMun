@@ -18,6 +18,11 @@ venv/
 storage/*
 !storage/.gitkeep
 
+# Modelos de IA y datasets (pesados; el dataset contiene datos personales)
+models/ia/**/*.pt
+models/ia/**/*.safetensors
+dataset/
+
 # Herramientas
 .idea/
 .vscode/
@@ -26,3 +31,18 @@ storage/*
 # Datos sensibles
 docs/fuentes/*.xlsx
 !docs/fuentes/.gitkeep
+
+# Artefactos de la tarea (articulo, CRISP-DM, presentacion, zips)
+docs/Paquete_articulo_resultados_codigo/
+*.zip
+
+# Planificacion del agente (no necesaria para reproducir el proyecto)
+.planning/
+
+# Artefactos de build
+*.log
+*.aux
+*.bbl
+*.blg
+*.out
+*.toc

@@ -52,7 +52,6 @@ AREAS: tuple[AreaMunicipal, ...] = (
     AreaMunicipal("OF-16", "Constancia de Predio Rústico", "RUS", 72),
 )
 
-# Feriados nacionales de Perú (editables desde administración).
 FERIADOS_2026: tuple[tuple[str, str], ...] = (
     ("2026-01-01", "Año Nuevo"),
     ("2026-04-02", "Jueves Santo"),

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% from "_macros.html" import semaforo_badge %}
+{% block title %}Documentos · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% set estado_estilos = {
+  "registrado": "bg-sky-100 text-sky-800",
+  "derivado": "bg-indigo-100 text-indigo-800",
+  "en_oficina": "bg-violet-100 text-violet-800",
+  "observado": "bg-amber-100 text-amber-800",
+  "finalizado": "bg-emerald-100 text-emerald-800",
+  "archivado": "bg-slate-200 text-slate-700",
+  "anulado": "bg-red-100 text-red-700"
+} %}
+
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Documentos</h1>
+    <p class="text-sm text-slate-500">
+      Registro y seguimiento interno de los expedientes físicos digitalizados.
+    </p>
+  </div>
+  {% if puede_registrar %}
+  <a href="/documentos/nuevo"
+     class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+    Registrar documento
+  </a>
+  {% endif %}
+</div>
+
+<form method="get" action="/documentos"
+      class="mb-4 grid gap-2 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-5">
+  <input type="search" name="q" value="{{ q }}"
+         placeholder="Código, certificado, DNI/RUC, asunto…"
+         class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none lg:col-span-2">
+
+  <select name="estado"
+          class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    <option value="">Todos los estados</option>
+    {% for item in estados %}
+    <option value="{{ item.value }}" {% if estado == item.value %}selected{% endif %}>
+      {{ item.value.replace('_', ' ')|capitalize }}
+    </option>
+    {% endfor %}
+  </select>
+
+  <select name="tipo_tramite_id"
+          class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    <option value="">Todos los trámites</option>
+    {% for tipo in tipos %}
+    <option value="{{ tipo.id }}" {% if tipo_tramite_id == tipo.id %}selected{% endif %}>
+      {{ tipo.codigo }} · {{ tipo.nombre }}
+    </option>
+    {% endfor %}
+  </select>
+
+  <div class="flex gap-2">
+    <select name="oficina_id"
+            class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      <option value="">Todas las oficinas</option>
+      {% for oficina in oficinas %}
+      <option value="{{ oficina.id }}" {% if oficina_id == oficina.id %}selected{% endif %}>
+        {{ oficina.codigo }}
+      </option>
+      {% endfor %}
+    </select>
+    <button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50">
+      Filtrar
+    </button>
+  </div>
+</form>
+
+<div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+      <tr>
+        <th class="px-4 py-3">Código</th>
+        <th class="px-4 py-3">Trámite</th>
+        <th class="px-4 py-3">Asunto / administrado</th>
+        <th class="px-4 py-3">Estado</th>
+        <th class="px-4 py-3">Semáforo</th>
+        <th class="px-4 py-3 text-center">Archivos</th>
+        <th class="px-4 py-3 text-right">Registrado</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for documento in documentos %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-3">
+          <a href="/documentos/{{ documento.codigo }}" class="font-mono text-sm font-semibold text-indigo-600 hover:underline">
+            {{ documento.codigo }}
+          </a>
+        </td>
+        <td class="px-4 py-3">
+          <div class="font-medium">{{ documento.tipo_tramite.codigo }}</div>
+          <div class="text-xs text-slate-400">{{ documento.tipo_tramite.nombre }}</div>
+        </td>
+        <td class="px-4 py-3">
+          <div>{{ documento.asunto or '—' }}</div>
+          <div class="text-xs text-slate-400">
+            {{ documento.administrado or (documento.ciudadano.nombres if documento.ciudadano else '—') }}
+            {% if documento.numero_certificado %}· {{ documento.numero_certificado }}{% endif %}
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <span class="rounded-full px-2 py-0.5 text-xs font-medium {{ estado_estilos.get(documento.estado.value, 'bg-slate-100 text-slate-700') }}">
+            {{ documento.estado.value.replace('_', ' ')|capitalize }}
+          </span>
+        </td>
+        <td class="px-4 py-3">
+          {{ semaforo_badge(plazos.get(documento.id)) }}
+        </td>
+        <td class="px-4 py-3 text-center">
+          {% if documento.archivos %}
+          <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+            {{ documento.archivos|length }}
+          </span>
+          {% else %}
+          <span class="text-xs text-slate-400">Sin escaneo</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 text-right text-xs text-slate-500">
+          {{ documento.fecha_registro|fecha("%d/%m/%Y") }}
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="7" class="px-4 py-10 text-center text-sm text-slate-400">
+          No hay documentos que coincidan con los filtros.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+  <span>{{ total }} documento(s) · página {{ page }} de {{ total_paginas }}</span>
+  {% if total_paginas > 1 %}
+  <div class="flex flex-wrap gap-1">
+    {% if page > 1 %}
+    <a href="?{{ base_query }}{% if base_query %}&{% endif %}page={{ page - 1 }}"
+       class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50">Anterior</a>
+    {% endif %}
+    {% for numero in range(1, total_paginas + 1) %}
+      {% if numero == page %}
+      <span class="rounded-lg bg-slate-900 px-3 py-1.5 font-medium text-white">{{ numero }}</span>
+      {% elif numero <= 2 or numero > total_paginas - 2 or (numero >= page - 1 and numero <= page + 1) %}
+      <a href="?{{ base_query }}{% if base_query %}&{% endif %}page={{ numero }}"
+         class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50">{{ numero }}</a>
+      {% elif numero == 3 or numero == total_paginas - 2 %}
+      <span class="px-1 py-1.5 text-slate-400">…</span>
+      {% endif %}
+    {% endfor %}
+    {% if page < total_paginas %}
+    <a href="?{{ base_query }}{% if base_query %}&{% endif %}page={{ page + 1 }}"
+       class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50">Siguiente</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,354 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Métricas · Administración · {{ app_name }}{% endblock %}
+
+{% block acciones %}
+<a href="/admin/metricas?periodo={{ filtros.periodo.clave }}&oficina_id={{ filtros.oficina_id or '' }}&tipo_tramite_id={{ filtros.tipo_tramite_id or '' }}&origen={{ filtros.origen.value if filtros.origen else '' }}"
+   class="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
+  Actualizar
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+
+{# ------------------------------- Filtros ------------------------------- #}
+<form method="get" action="/admin/metricas"
+      class="mb-6 grid gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-5">
+  <label class="text-sm">
+    <span class="mb-1 block font-medium text-slate-600">Periodo</span>
+    <select name="periodo" class="w-full rounded-lg border border-slate-300 px-3 py-2">
+      {% for clave, etiqueta in periodos %}
+      <option value="{{ clave }}" {{ 'selected' if filtros.periodo.clave == clave else '' }}>{{ etiqueta }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label class="text-sm">
+    <span class="mb-1 block font-medium text-slate-600">Oficina</span>
+    <select name="oficina_id" class="w-full rounded-lg border border-slate-300 px-3 py-2">
+      <option value="">Todas</option>
+      {% for oficina in oficinas %}
+      <option value="{{ oficina.id }}" {{ 'selected' if filtros.oficina_id == oficina.id else '' }}>
+        {{ oficina.codigo }} · {{ oficina.nombre }}
+      </option>
+      {% endfor %}
+    </select>
+  </label>
+  <label class="text-sm">
+    <span class="mb-1 block font-medium text-slate-600">Tipo de trámite</span>
+    <select name="tipo_tramite_id" class="w-full rounded-lg border border-slate-300 px-3 py-2">
+      <option value="">Todos</option>
+      {% for tipo in tipos %}
+      <option value="{{ tipo.id }}" {{ 'selected' if filtros.tipo_tramite_id == tipo.id else '' }}>
+        {{ tipo.codigo }} · {{ tipo.nombre }}
+      </option>
+      {% endfor %}
+    </select>
+  </label>
+  <label class="text-sm">
+    <span class="mb-1 block font-medium text-slate-600">Origen</span>
+    <select name="origen" class="w-full rounded-lg border border-slate-300 px-3 py-2">
+      <option value="">Todos</option>
+      {% for valor in origenes %}
+      <option value="{{ valor.value }}" {{ 'selected' if filtros.origen == valor else '' }}>{{ valor.value|capitalize }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <div class="flex items-end">
+    <button type="submit" class="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+      Aplicar filtros
+    </button>
+  </div>
+</form>
+
+{# -------------------------------- KPIs --------------------------------- #}
+{% set r = panel.resumen %}
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">En trámite</div>
+    <div class="mt-1 text-3xl font-semibold">{{ r.documentos_en_tramite }}</div>
+    <div class="mt-1 text-xs text-slate-400">{{ r.abiertos }} tramos abiertos</div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-rose-200">
+    <div class="text-xs font-medium uppercase tracking-wide text-rose-600">Atrasados</div>
+    <div class="mt-1 text-3xl font-semibold text-rose-700">{{ r.atrasado + r.muy_atrasado }}</div>
+    <div class="mt-1 text-xs text-slate-400">{{ r.porcentaje_atraso|round(1) }}% de los tramos con plazo</div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-amber-200">
+    <div class="text-xs font-medium uppercase tracking-wide text-amber-600">Por vencer</div>
+    <div class="mt-1 text-3xl font-semibold text-amber-700">{{ r.por_vencer }}</div>
+    <div class="mt-1 text-xs text-slate-400">en riesgo de retraso</div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-emerald-200">
+    <div class="text-xs font-medium uppercase tracking-wide text-emerald-600">Cumplimiento</div>
+    <div class="mt-1 text-3xl font-semibold text-emerald-700">{{ r.cumplimiento|round(1) }}%</div>
+    <div class="mt-1 text-xs text-slate-400">{{ r.cerrados }} tramos cerrados</div>
+  </div>
+</div>
+
+<div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="rounded-2xl bg-white p-4 text-sm shadow-sm ring-1 ring-slate-200">
+    <div class="text-xs uppercase tracking-wide text-slate-500">Mediana de atención</div>
+    <div class="mt-1 text-xl font-semibold">{{ r.mediana_horas }} h</div>
+    <div class="text-xs text-slate-400">{{ r.mediana_sla }}× del SLA</div>
+  </div>
+  <div class="rounded-2xl bg-white p-4 text-sm shadow-sm ring-1 ring-slate-200">
+    <div class="text-xs uppercase tracking-wide text-slate-500">Sin recepción</div>
+    <div class="mt-1 text-xl font-semibold">{{ r.por_recibir }}</div>
+    <div class="text-xs text-slate-400">esperando confirmación</div>
+  </div>
+  <div class="rounded-2xl bg-white p-4 text-sm shadow-sm ring-1 ring-slate-200">
+    <div class="text-xs uppercase tracking-wide text-slate-500">Antigüedad máxima</div>
+    <div class="mt-1 text-xl font-semibold">{{ r.antiguedad_maxima }} h</div>
+    <div class="text-xs text-slate-400">del tramo abierto más viejo</div>
+  </div>
+  <div class="rounded-2xl bg-white p-4 text-sm shadow-sm ring-1 ring-slate-200">
+    <div class="text-xs uppercase tracking-wide text-slate-500">Observaciones</div>
+    <div class="mt-1 text-xl font-semibold">{{ r.observaciones }}</div>
+    <div class="text-xs text-slate-400">{{ r.finalizados_periodo }} finalizados en el periodo</div>
+  </div>
+</div>
+
+{# ------------------------------- Gráficos ------------------------------ #}
+<div class="mt-6 grid gap-4 lg:grid-cols-2">
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Semáforo global</h2>
+    <div class="relative h-64"><canvas id="chart-semaforo"></canvas></div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Estado de los documentos</h2>
+    <div class="relative h-64"><canvas id="chart-estados"></canvas></div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 lg:col-span-2">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Carga abierta por oficina y semáforo</h2>
+    <div class="relative h-80"><canvas id="chart-oficinas"></canvas></div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Cumplimiento por oficina</h2>
+    <div class="relative h-72"><canvas id="chart-cumplimiento"></canvas></div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Consumo del SLA</h2>
+    <div class="relative h-72"><canvas id="chart-sla"></canvas></div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Tramos abiertos por tipo</h2>
+    <div class="relative h-72"><canvas id="chart-tipos"></canvas></div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Carga por oficina</h2>
+    <div class="relative h-72"><canvas id="chart-carga"></canvas></div>
+  </div>
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 lg:col-span-2">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Tendencia semanal</h2>
+    <div class="relative h-80"><canvas id="chart-tendencia"></canvas></div>
+  </div>
+</div>
+
+{# ------------------------------- Tablas -------------------------------- #}
+<div class="mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+  <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Ahora por oficina</h2>
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="text-left text-xs uppercase tracking-wide text-slate-500">
+        <tr class="border-b border-slate-200">
+          <th class="py-2 pr-3">Oficina</th>
+          <th class="py-2 pr-3 text-right">En oficina</th>
+          <th class="py-2 pr-3 text-right">Por recibir</th>
+          <th class="py-2 pr-3 text-right">En plazo</th>
+          <th class="py-2 pr-3 text-right">Por vencer</th>
+          <th class="py-2 pr-3 text-right">Atrasado</th>
+          <th class="py-2 pr-3 text-right">Muy atrasado</th>
+          <th class="py-2 pr-3 text-right">% atraso</th>
+          <th class="py-2 pr-3 text-right">Más antiguo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in panel.oficinas %}
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-2 pr-3">
+            <a href="/documentos?oficina_id={{ o.id }}&estado=en_oficina" class="font-medium text-indigo-600 hover:underline">
+              {{ o.codigo }}
+            </a>
+            <span class="text-slate-500">{{ o.nombre }}</span>
+          </td>
+          <td class="py-2 pr-3 text-right">{{ o.abiertos }}</td>
+          <td class="py-2 pr-3 text-right">{{ o.por_recibir }}</td>
+          <td class="py-2 pr-3 text-right text-emerald-700">{{ o.en_plazo }}</td>
+          <td class="py-2 pr-3 text-right text-amber-700">{{ o.por_vencer }}</td>
+          <td class="py-2 pr-3 text-right text-orange-700">{{ o.atrasado }}</td>
+          <td class="py-2 pr-3 text-right font-semibold text-rose-700">{{ o.muy_atrasado }}</td>
+          <td class="py-2 pr-3 text-right">{{ o.porcentaje_atraso|round(1) }}%</td>
+          <td class="py-2 pr-3 text-right">{{ o.antiguedad_maxima }} h</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="py-6 text-center text-slate-400">Sin datos para los filtros seleccionados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="mt-6 grid gap-4 lg:grid-cols-2">
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Desempeño por oficina</h2>
+    <p class="mb-3 text-xs text-slate-400">Solo tramos cerrados dentro del periodo. Menos de 20 cierres se marca como muestra insuficiente.</p>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="text-left text-xs uppercase tracking-wide text-slate-500">
+          <tr class="border-b border-slate-200">
+            <th class="py-2 pr-3">Oficina</th>
+            <th class="py-2 pr-3 text-right">Cerrados</th>
+            <th class="py-2 pr-3 text-right">Mediana h</th>
+            <th class="py-2 pr-3 text-right">Mediana SLA</th>
+            <th class="py-2 pr-3 text-right">Cumple</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in panel.oficinas %}
+          {% if o.cerrados %}
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-2 pr-3 font-medium">{{ o.codigo }}</td>
+            <td class="py-2 pr-3 text-right">
+              {{ o.cerrados }}
+              {% if o.cerrados < 20 %}<span class="ml-1 rounded bg-slate-100 px-1 text-[10px] text-slate-500">muestra</span>{% endif %}
+            </td>
+            <td class="py-2 pr-3 text-right">{{ o.mediana_horas }}</td>
+            <td class="py-2 pr-3 text-right">{{ o.mediana_sla }}×</td>
+            <td class="py-2 pr-3 text-right {{ 'text-emerald-700' if o.cumplimiento >= 90 else ('text-amber-700' if o.cumplimiento >= 70 else 'text-rose-700') }}">
+              {{ o.cumplimiento|round(1) }}%
+            </td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Documentos más atrasados</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="text-left text-xs uppercase tracking-wide text-slate-500">
+          <tr class="border-b border-slate-200">
+            <th class="py-2 pr-3">Código</th>
+            <th class="py-2 pr-3">Oficina</th>
+            <th class="py-2 pr-3 text-right">Horas de atraso</th>
+            <th class="py-2 pr-3">Límite</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in panel.criticos %}
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-2 pr-3">
+              <a href="/documentos/{{ c.codigo }}" class="font-medium text-indigo-600 hover:underline">{{ c.codigo }}</a>
+            </td>
+            <td class="py-2 pr-3">{{ c.oficina_codigo }}</td>
+            <td class="py-2 pr-3 text-right font-semibold text-rose-700">{{ c.horas_atraso }} h</td>
+            <td class="py-2 pr-3 text-slate-500">{{ c.fecha_limite|fecha }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="py-6 text-center text-slate-400">Sin documentos atrasados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const charts = {{ panel.charts|tojson }};
+  const base = { responsive: true, maintainAspectRatio: false };
+  const grid = { color: '#e2e8f0' };
+
+  new Chart(document.getElementById('chart-semaforo'), {
+    type: 'doughnut',
+    data: {
+      labels: charts.semaforo.labels,
+      datasets: [{ data: charts.semaforo.valores, backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#e11d48'] }]
+    },
+    options: { ...base, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  new Chart(document.getElementById('chart-estados'), {
+    type: 'doughnut',
+    data: {
+      labels: charts.estados.labels,
+      datasets: [{ data: charts.estados.valores, backgroundColor: ['#6366f1', '#0ea5e9', '#14b8a6', '#f59e0b', '#10b981', '#64748b', '#e11d48'] }]
+    },
+    options: { ...base, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  new Chart(document.getElementById('chart-oficinas'), {
+    type: 'bar',
+    data: {
+      labels: charts.oficinas.labels,
+      datasets: [
+        { label: 'En plazo', data: charts.oficinas.en_plazo, backgroundColor: '#10b981' },
+        { label: 'Por vencer', data: charts.oficinas.por_vencer, backgroundColor: '#f59e0b' },
+        { label: 'Atrasado', data: charts.oficinas.atrasado, backgroundColor: '#f97316' },
+        { label: 'Muy atrasado', data: charts.oficinas.muy_atrasado, backgroundColor: '#e11d48' }
+      ]
+    },
+    options: {
+      ...base,
+      scales: { x: { stacked: true, grid }, y: { stacked: true, grid } },
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  new Chart(document.getElementById('chart-cumplimiento'), {
+    type: 'bar',
+    data: {
+      labels: charts.cumplimiento.labels,
+      datasets: [{ label: '% cumplimiento', data: charts.cumplimiento.valores, backgroundColor: '#6366f1' }]
+    },
+    options: { ...base, indexAxis: 'y', scales: { x: { max: 100, grid }, y: { grid } }, plugins: { legend: { display: false } } }
+  });
+
+  new Chart(document.getElementById('chart-sla'), {
+    type: 'bar',
+    data: {
+      labels: charts.tiempo_sla.labels,
+      datasets: [{ label: 'Mediana del SLA consumido', data: charts.tiempo_sla.valores, backgroundColor: '#0ea5e9' }]
+    },
+    options: { ...base, indexAxis: 'y', scales: { x: { grid }, y: { grid } }, plugins: { legend: { display: false } } }
+  });
+
+  new Chart(document.getElementById('chart-tipos'), {
+    type: 'bar',
+    data: {
+      labels: charts.tipos.labels,
+      datasets: [
+        { label: 'Abiertos', data: charts.tipos.abiertos, backgroundColor: '#94a3b8' },
+        { label: 'Atrasados', data: charts.tipos.atrasados, backgroundColor: '#e11d48' }
+      ]
+    },
+    options: { ...base, indexAxis: 'y', scales: { x: { stacked: true, grid }, y: { stacked: true, grid } }, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  new Chart(document.getElementById('chart-carga'), {
+    type: 'pie',
+    data: {
+      labels: charts.carga.labels,
+      datasets: [{ data: charts.carga.valores, backgroundColor: ['#6366f1', '#0ea5e9', '#14b8a6', '#f59e0b', '#f97316', '#e11d48', '#8b5cf6', '#64748b', '#94a3b8'] }]
+    },
+    options: { ...base, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  new Chart(document.getElementById('chart-tendencia'), {
+    type: 'line',
+    data: {
+      labels: charts.tendencia.labels,
+      datasets: [
+        { label: 'Recibidos', data: charts.tendencia.recibidos, borderColor: '#6366f1', tension: 0.3 },
+        { label: 'Cerrados', data: charts.tendencia.cerrados, borderColor: '#10b981', tension: 0.3 },
+        { label: 'Finalizados', data: charts.tendencia.finalizados, borderColor: '#0ea5e9', tension: 0.3 },
+        { label: 'Observaciones', data: charts.tendencia.observaciones, borderColor: '#f59e0b', tension: 0.3 },
+        { label: 'Alertas', data: charts.tendencia.alertas, borderColor: '#e11d48', tension: 0.3 }
+      ]
+    },
+    options: { ...base, scales: { x: { grid }, y: { grid } }, plugins: { legend: { position: 'bottom' } } }
+  });
+</script>
+{% endblock %}

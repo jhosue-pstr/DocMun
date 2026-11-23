@@ -1,5 +1,6 @@
 """Rutas web con plantillas Jinja2."""
 
+from collections import Counter
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Form, Request
@@ -13,8 +14,9 @@ from app.core.security import verify_password
 from app.db.session import get_db
 from app.models.catalogos import Oficina, TipoTramite
 from app.models.documentos import Documento
-from app.models.enums import EstadoDocumento
+from app.models.enums import EstadoDocumento, Semaforo
 from app.models.usuarios import Usuario
+from app.services.sla import evaluar_plazos
 from app.web.templating import render
 
 router = APIRouter()
@@ -94,12 +96,18 @@ def panel(
             EstadoDocumento.OBSERVADO,
         )
     )
+    plazos = evaluar_plazos(db)
+    conteo_semaforos = Counter(estado.semaforo for _, estado in plazos)
 
     contexto = {
         "current_user": user,
         "total_documentos": total,
         "en_tramite": en_tramite,
         "finalizados": por_estado.get(EstadoDocumento.FINALIZADO, 0),
+        "semaforos": [
+            (semaforo, conteo_semaforos.get(semaforo, 0)) for semaforo in Semaforo
+        ],
+        "total_con_plazo": len(plazos),
         "oficinas": db.scalar(
             select(func.count()).select_from(Oficina).where(Oficina.activa.is_(True))
         ),

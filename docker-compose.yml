@@ -1,3 +1,23 @@
+x-app-environment: &app-environment
+  APP_NAME: DocMun
+  ENVIRONMENT: development
+  DEBUG: "true"
+  SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me}
+  DATABASE_URL: postgresql+psycopg://docmun:docmun@db:5432/docmun
+  ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@docmun.local}
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin1234}
+  TIMEZONE: America/Lima
+  SLA_INTERVALO_SEGUNDOS: ${SLA_INTERVALO_SEGUNDOS:-900}
+  IA_HABILITADA: ${IA_HABILITADA:-true}
+  IA_MODELOS_DIR: /app/models/ia
+  IA_MODELO_CLASIFICACION: clasificacion/modelo.pt
+  IA_MODELO_KIE: kie/modelo.pt
+  IA_DISPOSITIVO: ${IA_DISPOSITIVO:-cpu}
+  IA_MAX_PAGINAS: ${IA_MAX_PAGINAS:-3}
+  IA_DPI: ${IA_DPI:-200}
+  IA_OCR_IDIOMAS: ${IA_OCR_IDIOMAS:-spa+eng}
+  IA_INTERVALO_SEGUNDOS: ${IA_INTERVALO_SEGUNDOS:-5}
+
 services:
   db:
     image: postgres:16-alpine
@@ -20,15 +40,7 @@ services:
   app:
     build: .
     container_name: docmun-app
-    environment:
-      APP_NAME: DocMun
-      ENVIRONMENT: development
-      DEBUG: "true"
-      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me}
-      DATABASE_URL: postgresql+psycopg://docmun:docmun@db:5432/docmun
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@docmun.local}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin1234}
-      TIMEZONE: America/Lima
+    environment: *app-environment
     ports:
       - "8000:8000"
     volumes:
@@ -38,6 +50,37 @@ services:
       db:
         condition: service_healthy
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  scheduler:
+    build: .
+    container_name: docmun-scheduler
+    environment: *app-environment
+    volumes:
+      - ./:/app
+      - ./storage:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python -m scripts.scheduler
+    restart: unless-stopped
+
+  ia:
+    build:
+      context: .
+      dockerfile: Dockerfile.ia
+    container_name: docmun-ia
+    environment: *app-environment
+    volumes:
+      - ./storage:/app/storage
+      - ./models/ia:/app/models/ia:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python -m scripts.worker_ia
+    restart: unless-stopped
+    # La inferencia en CPU usa ~2 GB; el límite evita tumbar el resto del host.
+    mem_limit: 4g
+    cpus: 2.0
 
   adminer:
     image: adminer:latest

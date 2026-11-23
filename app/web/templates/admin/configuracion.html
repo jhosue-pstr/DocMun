@@ -1,0 +1,74 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Configuración · Administración · {{ app_name }}{% endblock %}
+
+{% block admin_content %}
+<form method="post" action="/admin/configuracion"
+      class="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+    Nuevo parámetro
+  </h2>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <input name="clave" required maxlength="100" placeholder="clave_nueva"
+           class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    <input name="valor" required placeholder="Valor"
+           class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    <input name="descripcion" maxlength="250" placeholder="Descripción (opcional)"
+           class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    <button class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+      Crear parámetro
+    </button>
+  </div>
+</form>
+
+<div class="space-y-3">
+  {% for parametro in parametros %}
+  <form method="post" action="/admin/configuracion/{{ parametro.clave }}"
+        class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <div>
+        <div class="font-mono text-sm font-semibold">{{ parametro.clave }}</div>
+        {% if parametro.descripcion %}
+        <div class="text-xs text-slate-400">{{ parametro.descripcion }}</div>
+        {% endif %}
+      </div>
+      <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium hover:bg-slate-50">
+        Guardar
+      </button>
+    </div>
+
+    <div class="mt-3 grid gap-3 sm:grid-cols-3">
+      <label class="block sm:col-span-2">
+        <span class="mb-1 block text-xs font-medium text-slate-500">Valor</span>
+        {% if parametro.clave == 'horario_laboral' %}
+        <textarea name="valor" rows="3" required
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-xs focus:border-indigo-500 focus:outline-none">{{ parametro.valor }}</textarea>
+        {% else %}
+        <input name="valor" value="{{ parametro.valor }}" required
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+        {% endif %}
+      </label>
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium text-slate-500">Descripción</span>
+        <input name="descripcion" value="{{ parametro.descripcion or '' }}" maxlength="250"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+    </div>
+  </form>
+  {% else %}
+  <div class="rounded-2xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm ring-1 ring-slate-200">
+    Todavía no hay parámetros. Ejecuta el seed o crea uno arriba.
+  </div>
+  {% endfor %}
+</div>
+
+{% if parametros %}
+<div class="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
+  <span class="font-mono">horario_laboral</span> debe ser un objeto JSON válido; cada día acepta
+  un tramo <span class="font-mono">[&quot;08:00&quot;, &quot;17:00&quot;]</span> o varios, por ejemplo
+  <span class="font-mono">[[&quot;08:00&quot;, &quot;13:00&quot;], [&quot;14:00&quot;, &quot;17:00&quot;]]</span>.
+  Los umbrales se expresan como fracción del plazo (0.8 = 80%).
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }} · Administración · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <p class="text-xs font-medium uppercase tracking-wide text-indigo-600">Administración</p>
+    <h1 class="text-2xl font-semibold tracking-tight">{{ titulo }}</h1>
+    {% if subtitulo %}<p class="mt-1 text-sm text-slate-500">{{ subtitulo }}</p>{% endif %}
+  </div>
+  <div class="flex flex-wrap gap-2">{% block acciones %}{% endblock %}</div>
+</div>
+
+{% set tab_base = "rounded-lg px-3 py-1.5 text-sm font-medium" %}
+{% set tab_on = "bg-slate-900 text-white" %}
+{% set tab_off = "text-slate-600 hover:bg-slate-200" %}
+<nav class="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+  <a href="/admin" class="{{ tab_base }} {{ tab_on if seccion == 'resumen' else tab_off }}">Resumen</a>
+  <a href="/admin/metricas" class="{{ tab_base }} {{ tab_on if seccion == 'metricas' else tab_off }}">Métricas</a>
+  <a href="/admin/oficinas" class="{{ tab_base }} {{ tab_on if seccion == 'oficinas' else tab_off }}">Oficinas</a>
+  <a href="/admin/tipos-tramite" class="{{ tab_base }} {{ tab_on if seccion == 'tipos' else tab_off }}">Tipos de trámite</a>
+  <a href="/admin/plazos" class="{{ tab_base }} {{ tab_on if seccion == 'plazos' else tab_off }}">Plazos</a>
+  <a href="/admin/feriados" class="{{ tab_base }} {{ tab_on if seccion == 'feriados' else tab_off }}">Feriados</a>
+  <a href="/admin/configuracion" class="{{ tab_base }} {{ tab_on if seccion == 'configuracion' else tab_off }}">Configuración</a>
+</nav>
+
+{% block admin_content %}{% endblock %}
+{% endblock %}

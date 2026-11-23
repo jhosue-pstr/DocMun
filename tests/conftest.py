@@ -9,12 +9,23 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import app.models  # noqa: F401
+from app.core.config import settings
 from app.core.security import hash_password
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
 from app.models.enums import Rol
 from app.models.usuarios import Usuario
+
+
+@pytest.fixture(autouse=True)
+def ia_deshabilitada(monkeypatch):
+    """La IA queda apagada salvo que la prueba la active a propósito.
+
+    Evita que un `.env` de desarrollo con `IA_HABILITADA=true` cambie el
+    comportamiento de la suite (no hay worker durante pytest).
+    """
+    monkeypatch.setattr(settings, "ia_habilitada", False)
 
 
 @pytest.fixture()

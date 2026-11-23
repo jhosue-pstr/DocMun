@@ -1,0 +1,27 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    OMP_NUM_THREADS=2 \
+    MKL_NUM_THREADS=2
+
+WORKDIR /app
+
+# Tesseract con español e inglés. Sin estas librerías el OCR no arranca.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        tesseract-ocr \
+        tesseract-ocr-eng \
+        tesseract-ocr-spa \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt requirements-ia.txt ./
+
+# torch CPU: evita bajar los ~2.5 GB de CUDA en un servidor sin GPU.
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu "torch==2.6.0" \
+    && pip install --no-cache-dir -r requirements-ia.txt
+
+COPY . .
+
+CMD ["python", "-m", "scripts.worker_ia"]

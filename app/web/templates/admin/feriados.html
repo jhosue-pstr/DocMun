@@ -1,0 +1,66 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Feriados · Administración · {{ app_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="grid gap-6 lg:grid-cols-3">
+  <form method="post" action="/admin/feriados"
+        class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 lg:col-span-1">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+      Agregar feriado
+    </h2>
+    <label class="mb-3 block">
+      <span class="mb-1 block text-xs font-medium text-slate-500">Fecha</span>
+      <input name="fecha" type="date" required
+             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    </label>
+    <label class="mb-3 block">
+      <span class="mb-1 block text-xs font-medium text-slate-500">Descripción</span>
+      <input name="descripcion" required maxlength="150"
+             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    </label>
+    <button class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+      Agregar
+    </button>
+    <p class="mt-3 text-xs text-slate-400">
+      La fecha debe ser única. Los feriados se usan para calcular plazos en horas hábiles.
+    </p>
+  </form>
+
+  <div class="lg:col-span-2">
+    <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-4 py-3">Fecha</th>
+            <th class="px-4 py-3">Descripción</th>
+            <th class="px-4 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for feriado in feriados %}
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3 font-medium">{{ feriado.fecha.strftime("%d/%m/%Y") }}</td>
+            <td class="px-4 py-3">{{ feriado.descripcion }}</td>
+            <td class="px-4 py-3 text-right">
+              <form method="post" action="/admin/feriados/{{ feriado.id }}/eliminar"
+                    onsubmit="return confirm('¿Eliminar este feriado?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button class="text-xs font-medium text-red-600 hover:underline">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="px-4 py-8 text-center text-sm text-slate-400">
+              Todavía no hay feriados registrados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-2 text-xs text-slate-400">{{ feriados|length }} feriado(s) registrados.</p>
+  </div>
+</div>
+{% endblock %}

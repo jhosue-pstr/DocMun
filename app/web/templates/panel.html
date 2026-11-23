@@ -7,8 +7,8 @@
     <h1 class="text-2xl font-semibold tracking-tight">Panel de control</h1>
     <p class="text-sm text-slate-500">Resumen general del sistema de documentos.</p>
   </div>
-  <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-    Fase 0 · Base instalada
+  <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">
+    Fase 3 · Semáforo activo
   </span>
 </div>
 
@@ -33,6 +33,34 @@
     <div class="mt-1 text-3xl font-semibold">{{ oficinas }}</div>
     <div class="mt-1 text-xs text-slate-400">{{ tipos }} tipos de trámite activos</div>
   </div>
+</div>
+
+<div class="mt-6 flex flex-wrap items-center justify-between gap-2">
+  <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+    Semáforo de plazos
+  </h2>
+  <span class="text-xs text-slate-400">{{ total_con_plazo }} tramo(s) con plazo activo</span>
+</div>
+
+{% set semaforo_colores = {
+  "en_plazo": "text-emerald-600",
+  "por_vencer": "text-amber-600",
+  "atrasado": "text-orange-600",
+  "muy_atrasado": "text-red-600"
+} %}
+
+<div class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  {% for semaforo, cantidad in semaforos %}
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">
+      {{ semaforo.value.replace('_', ' ')|capitalize }}
+    </div>
+    <div class="mt-1 text-3xl font-semibold {{ semaforo_colores.get(semaforo.value, 'text-slate-700') }}">
+      {{ cantidad }}
+    </div>
+    <div class="mt-1 text-xs text-slate-400">documentos en ese nivel</div>
+  </div>
+  {% endfor %}
 </div>
 
 <div class="mt-6 grid gap-6 lg:grid-cols-3">
@@ -63,14 +91,20 @@
       Próximos pasos
     </h2>
     <ol class="space-y-3 text-sm text-slate-600">
-      <li class="flex gap-2"><span class="text-indigo-500">1.</span> Catálogos y registro de documentos</li>
-      <li class="flex gap-2"><span class="text-indigo-500">2.</span> Derivación entre las 16 oficinas</li>
-      <li class="flex gap-2"><span class="text-indigo-500">3.</span> Plazos y semáforo de retraso</li>
-      <li class="flex gap-2"><span class="text-indigo-500">4.</span> Notificación por WhatsApp al finalizar</li>
+      <li class="flex gap-2"><span class="text-emerald-500">✓</span> Catálogos y registro de documentos</li>
+      <li class="flex gap-2"><span class="text-emerald-500">✓</span> Derivación entre las 16 oficinas</li>
+      <li class="flex gap-2"><span class="text-emerald-500">✓</span> Plazos y semáforo de retraso</li>
+      <li class="flex gap-2"><span class="text-indigo-500">1.</span> Notificación por WhatsApp al finalizar</li>
     </ol>
+    {% if current_user and current_user.rol == 'admin' %}
+    <a href="/admin/metricas"
+       class="mt-4 block rounded-lg bg-indigo-50 p-3 text-xs font-medium text-indigo-700 hover:bg-indigo-100">
+      Ver métricas por oficina →
+    </a>
+    {% endif %}
     <div class="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
-      El Excel consolidado ya fue analizado: 2483 documentos históricos y 16 áreas
-      que corresponden a las 16 oficinas.
+      La circulación ya está activa: revisa <a href="/bandejas" class="text-indigo-600 hover:underline">Bandejas</a>
+      para recibir, observar y finalizar documentos.
     </div>
   </div>
 </div>

@@ -1,0 +1,60 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Administración · {{ app_name }}{% endblock %}
+
+{% block admin_content %}
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <a href="/admin/oficinas" class="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:ring-indigo-300">
+    <div class="flex items-center justify-between">
+      <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Oficinas</div>
+      <span class="text-slate-300 group-hover:text-indigo-500">→</span>
+    </div>
+    <div class="mt-1 text-3xl font-semibold">{{ oficinas_activas }}</div>
+    <div class="mt-1 text-xs text-slate-400">activas de {{ oficinas_total }} registradas</div>
+  </a>
+
+  <a href="/admin/tipos-tramite" class="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:ring-indigo-300">
+    <div class="flex items-center justify-between">
+      <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Tipos de trámite</div>
+      <span class="text-slate-300 group-hover:text-indigo-500">→</span>
+    </div>
+    <div class="mt-1 text-3xl font-semibold">{{ tipos_activos }}</div>
+    <div class="mt-1 text-xs text-slate-400">activos de {{ tipos_total }} registrados</div>
+  </a>
+
+  <a href="/admin/plazos" class="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:ring-indigo-300">
+    <div class="flex items-center justify-between">
+      <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Plazos</div>
+      <span class="text-slate-300 group-hover:text-indigo-500">→</span>
+    </div>
+    <div class="mt-1 text-3xl font-semibold">{{ plazos }}</div>
+    <div class="mt-1 text-xs text-slate-400">combinaciones tipo × oficina</div>
+  </a>
+
+  <a href="/admin/feriados" class="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:ring-indigo-300">
+    <div class="flex items-center justify-between">
+      <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Feriados</div>
+      <span class="text-slate-300 group-hover:text-indigo-500">→</span>
+    </div>
+    <div class="mt-1 text-3xl font-semibold">{{ feriados }}</div>
+    <div class="mt-1 text-xs text-slate-400">días no laborables registrados</div>
+  </a>
+
+  <a href="/admin/configuracion" class="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:ring-indigo-300">
+    <div class="flex items-center justify-between">
+      <div class="text-xs font-medium uppercase tracking-wide text-slate-500">Configuración</div>
+      <span class="text-slate-300 group-hover:text-indigo-500">→</span>
+    </div>
+    <div class="mt-1 text-3xl font-semibold">{{ parametros }}</div>
+    <div class="mt-1 text-xs text-slate-400">parámetros editables</div>
+  </a>
+</div>
+
+<div class="mt-6 rounded-2xl bg-white p-5 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200">
+  <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Sobre los plazos</h2>
+  <p>
+    Cada plazo define cuántas horas puede permanecer un trámite en una oficina. El
+    semáforo de retraso se calcula después con el horario laboral y los feriados, por
+    eso conviene mantener ambos catálogos al día.
+  </p>
+</div>
+{% endblock %}

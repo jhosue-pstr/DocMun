@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}Registrar documento · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <p class="text-xs font-medium uppercase tracking-wide text-indigo-600">Ventanilla</p>
+    <h1 class="text-2xl font-semibold tracking-tight">Registrar documento</h1>
+    <p class="mt-1 text-sm text-slate-500">
+      El código interno se genera al guardar y se usa para imprimir el cargo con QR.
+    </p>
+  </div>
+  <a href="/documentos" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
+    Volver a la lista
+  </a>
+</div>
+
+{% if errores %}
+<div class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">
+  <ul class="list-inside list-disc space-y-1">
+    {% for error in errores %}<li>{{ error }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<form method="post" action="/documentos/nuevo" enctype="multipart/form-data" class="space-y-6">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <input type="hidden" name="analisis_id" id="analisis_id" value="{{ valores.analisis_id }}">
+
+  <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+      Datos del documento
+    </h2>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="block sm:col-span-2">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Tipo de trámite *</span>
+        <select name="tipo_tramite_id" required
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+          <option value="">Selecciona un tipo</option>
+          {% for tipo in tipos %}
+          <option value="{{ tipo.id }}" {% if valores.tipo_tramite_id == tipo.id|string %}selected{% endif %}>
+            {{ tipo.codigo }} · {{ tipo.nombre }}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Número de certificado</span>
+        <input name="numero_certificado" value="{{ valores.numero_certificado }}" maxlength="50"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+        <span class="mt-1 block text-xs text-slate-400">Opcional. Si lo completas, indica el año.</span>
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Año</span>
+        <input name="anio" type="number" min="1900" max="2100" step="1" value="{{ valores.anio }}"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Prioridad</span>
+        <select name="prioridad"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+          {% for item in prioridades %}
+          <option value="{{ item.value }}" {% if valores.prioridad == item.value %}selected{% endif %}>
+            {{ item.value|capitalize }}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">RUT</span>
+        <input name="rut" value="{{ valores.rut }}" maxlength="30"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+
+      <label class="block sm:col-span-2">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Asunto *</span>
+        <input name="asunto" value="{{ valores.asunto }}" required maxlength="300"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Referencia</span>
+        <input name="referencia" value="{{ valores.referencia }}" maxlength="200"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Expediente administrativo</span>
+        <input name="expediente_administrativo" value="{{ valores.expediente_administrativo }}" maxlength="50"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">RUC</span>
+        <input name="ruc" value="{{ valores.ruc }}" maxlength="20"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Administrado</span>
+        <input name="administrado" value="{{ valores.administrado }}" maxlength="200"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+        <span class="mt-1 block text-xs text-slate-400">Se usa si no registras los datos del ciudadano.</span>
+      </label>
+
+      <label class="block sm:col-span-2">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Observaciones</span>
+        <textarea name="observaciones" rows="2"
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">{{ valores.observaciones }}</textarea>
+      </label>
+    </div>
+  </section>
+
+  <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500">
+      Ciudadano (opcional)
+    </h2>
+    <p class="mb-4 text-xs text-slate-400">
+      Si el documento ya existe en el sistema, puedes dejar los nombres vacíos.
+    </p>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Tipo de documento</span>
+        <select name="ciudadano_tipo_documento"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+          {% for item in tipos_documento %}
+          <option value="{{ item.value }}" {% if valores.ciudadano_tipo_documento == item.value %}selected{% endif %}>
+            {{ item.value|upper }}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Número</span>
+        <input name="ciudadano_numero_documento" value="{{ valores.ciudadano_numero_documento }}" maxlength="20"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Nombres completos</span>
+        <input name="ciudadano_nombres" value="{{ valores.ciudadano_nombres }}" maxlength="200"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Correo</span>
+        <input name="ciudadano_email" type="email" value="{{ valores.ciudadano_email }}" maxlength="150"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Teléfono</span>
+        <input name="ciudadano_telefono" value="{{ valores.ciudadano_telefono }}" maxlength="30"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Dirección</span>
+        <input name="ciudadano_direccion" value="{{ valores.ciudadano_direccion }}" maxlength="250"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+      </label>
+    </div>
+  </section>
+
+  <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+    <h2 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500">
+      Archivo escaneado (opcional)
+    </h2>
+    <p class="mb-4 text-xs text-slate-400">
+      PDF, JPG, PNG o TIFF. Puedes registrar el documento sin archivo y adjuntarlo después.
+    </p>
+    <input type="file" name="archivo" accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff,application/pdf,image/*"
+           class="block w-full cursor-pointer rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-6 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-indigo-700">
+
+    {% if ia_habilitada %}
+    <div class="hidden"
+         hx-post="/documentos/analizar-borrador"
+         hx-encoding="multipart/form-data"
+         hx-include="closest form"
+         hx-trigger="change from:input[name='archivo']"
+         hx-target="#analisis-borrador"
+         hx-swap="innerHTML"
+         hx-indicator="#analisis-espera"></div>
+    {% endif %}
+
+    {% if ia_habilitada %}
+    <div class="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
+      <button type="button"
+              hx-post="/documentos/analizar-borrador"
+              hx-encoding="multipart/form-data"
+              hx-include="closest form"
+              hx-target="#analisis-borrador"
+              hx-swap="innerHTML"
+              hx-disabled-elt="this"
+              hx-indicator="#analisis-espera"
+              class="rounded-lg border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100">
+        Analizar con IA
+      </button>
+      <span id="analisis-espera" class="htmx-indicator text-xs text-slate-500">
+        Enviando el archivo…
+      </span>
+      <span class="text-xs text-slate-400">
+        El análisis arranca al elegir el archivo. Las sugerencias solo se guardan si tú las confirmas.
+      </span>
+    </div>
+    <div id="analisis-borrador" class="mt-3">
+      <p class="text-xs text-slate-400">
+        Aún no hay sugerencias: elige un archivo arriba.
+      </p>
+    </div>
+    {% else %}
+    <p class="mt-4 border-t border-slate-100 pt-4 text-xs text-slate-400">
+      Análisis automático deshabilitado (IA_HABILITADA=false).
+    </p>
+    {% endif %}
+  </section>
+
+  <div class="flex items-center gap-3">
+    <button class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
+      Registrar y generar código
+    </button>
+    <a href="/documentos" class="text-sm text-slate-500 hover:underline">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

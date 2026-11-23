@@ -23,10 +23,10 @@
 
       <nav class="hidden items-center gap-6 text-sm text-slate-300 md:flex">
         <a href="/panel" class="hover:text-white">Panel</a>
-        <span class="cursor-not-allowed text-slate-500" title="Disponible en la fase 1">Documentos</span>
-        <span class="cursor-not-allowed text-slate-500" title="Disponible en la fase 1">Bandejas</span>
+        <a href="/documentos" class="hover:text-white">Documentos</a>
+        <a href="/bandejas" class="hover:text-white">Bandejas</a>
         {% if current_user.rol == 'admin' %}
-        <span class="cursor-not-allowed text-slate-500" title="Disponible en la fase 1">Administración</span>
+        <a href="/admin" class="hover:text-white">Administración</a>
         {% endif %}
       </nav>
 
@@ -49,11 +49,22 @@
   {% endif %}
 
   <main class="mx-auto max-w-6xl px-4 py-8">
+    {% set flash_styles = {
+      "ok": "bg-emerald-50 text-emerald-800 ring-emerald-200",
+      "error": "bg-red-50 text-red-700 ring-red-200",
+      "info": "bg-sky-50 text-sky-800 ring-sky-200"
+    } %}
+    {% for item in flash_messages %}
+    <div class="mb-4 rounded-lg px-3 py-2 text-sm ring-1 {{ flash_styles.get(item.categoria, flash_styles['info']) }}">
+      {{ item.mensaje }}
+    </div>
+    {% endfor %}
+
     {% block content %}{% endblock %}
   </main>
 
   <footer class="mx-auto max-w-6xl px-4 pb-6 text-center text-xs text-slate-400">
-    {{ app_name }} · Fase 0 · {{ now if now else '' }}
+    {{ app_name }} · Fase 2 · Circulación · {{ now|fecha("%d/%m/%Y") }}
   </footer>
 
 </body>

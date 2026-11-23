@@ -1,0 +1,70 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ titulo }} · Administración · {{ app_name }}{% endblock %}
+
+{% block acciones %}
+<a href="/admin/oficinas"
+   class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
+  Volver
+</a>
+{% endblock %}
+
+{% block admin_content %}
+{% if errores %}
+<div class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">
+  <ul class="list-inside list-disc space-y-1">
+    {% for error in errores %}<li>{{ error }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<form method="post"
+      action="{{ '/admin/oficinas/' ~ oficina.id ~ '/editar' if oficina else '/admin/oficinas/nueva' }}"
+      class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <label class="block">
+      <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Código *</span>
+      <input name="codigo" value="{{ valores.get('codigo', '') }}" required maxlength="20"
+             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase focus:border-indigo-500 focus:outline-none">
+    </label>
+
+    <label class="block">
+      <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Siglas</span>
+      <input name="siglas" value="{{ valores.get('siglas', '') }}" maxlength="30"
+             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase focus:border-indigo-500 focus:outline-none">
+    </label>
+
+    <label class="block sm:col-span-2">
+      <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Nombre *</span>
+      <input name="nombre" value="{{ valores.get('nombre', '') }}" required maxlength="150"
+             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    </label>
+
+    <label class="block sm:col-span-2">
+      <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Ubicación</span>
+      <input name="ubicacion" value="{{ valores.get('ubicacion', '') }}" maxlength="150"
+             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    </label>
+
+    <label class="block">
+      <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Correo</span>
+      <input name="email" type="email" value="{{ valores.get('email', '') }}" maxlength="150"
+             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    </label>
+
+    <label class="block">
+      <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Teléfono</span>
+      <input name="telefono" value="{{ valores.get('telefono', '') }}" maxlength="30"
+             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+    </label>
+  </div>
+
+  <div class="mt-6 flex items-center gap-3">
+    <button class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+      Guardar oficina
+    </button>
+    <a href="/admin/oficinas" class="text-sm text-slate-500 hover:underline">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

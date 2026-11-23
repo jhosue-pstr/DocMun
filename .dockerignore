@@ -1,0 +1,25 @@
+# El contexto de build no debe incluir datos personales ni artefactos pesados.
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+.venv*/
+venv/
+
+# Escaneos, modelos y datasets no viajan dentro de la imagen.
+storage/
+models/
+dataset/
+docs/fuentes/
+
+.idea/
+.vscode/
+.DS_Store

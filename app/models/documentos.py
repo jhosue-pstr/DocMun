@@ -28,6 +28,7 @@ from app.models.enums import (
 )
 
 if TYPE_CHECKING:
+    from app.models.archivos import DocumentoArchivo
     from app.models.catalogos import Oficina, TipoTramite
     from app.models.ciudadanos import Ciudadano
     from app.models.notificaciones import Notificacion
@@ -109,6 +110,11 @@ class Documento(Base, TimestampMixin):
         order_by="Evento.creado_en",
     )
     notificaciones: Mapped[list[Notificacion]] = relationship(back_populates="documento")
+    archivos: Mapped[list[DocumentoArchivo]] = relationship(
+        back_populates="documento",
+        cascade="all, delete-orphan",
+        order_by="DocumentoArchivo.creado_en",
+    )
 
 
 class Movimiento(Base, TimestampMixin):
